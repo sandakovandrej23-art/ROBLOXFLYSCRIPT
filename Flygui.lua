@@ -10,6 +10,8 @@ local isFlying = false
 local flyConnection = nil
 local character, humanoid, rootPart
 local isMinimized = false
+local isDragging = false
+local dragStart, frameStart
 
 wait(2)
 
@@ -21,8 +23,7 @@ screenGui.ResetOnSpawn = false
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
 mainFrame.Size = UDim2.new(0, 300, 0, 180)
-mainFrame.Position = UDim2.new(0.5, -150, 0.1, 0)
-mainFrame.AnchorPoint = Vector2.new(0.5, 0)
+mainFrame.Position = UDim2.new(0.1, 0, 0.1, 0)
 mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 mainFrame.BackgroundTransparency = 0.1
 mainFrame.BorderSizePixel = 0
@@ -190,6 +191,32 @@ local function toggleMinimize()
 end
 
 minimizeButton.MouseButton1Click:Connect(toggleMinimize)
+
+title.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch then
+        isDragging = true
+        dragStart = input.Position
+        frameStart = mainFrame.Position
+    end
+end)
+
+title.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch and isDragging then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(
+            frameStart.X.Scale, 
+            frameStart.X.Offset + delta.X,
+            frameStart.Y.Scale, 
+            frameStart.Y.Offset + delta.Y
+        )
+    end
+end)
+
+title.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch then
+        isDragging = false
+    end
+end)
 
 local function initializeCharacter()
     if player.Character then
